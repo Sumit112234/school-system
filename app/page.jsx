@@ -20,6 +20,8 @@ import {
 } from "lucide-react";
 
 export default function LandingPage() {
+
+
   const { user, loading, getDashboardPath } = useAuth();
   const router = useRouter();
 
@@ -30,6 +32,8 @@ export default function LandingPage() {
       router.push(getDashboardPath(user.role));
     }
   }, [user, loading, router, getDashboardPath]);
+
+
 
   if (loading) {
     return (

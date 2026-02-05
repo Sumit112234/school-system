@@ -3,6 +3,7 @@ import { Analytics } from "@vercel/analytics/next";
 import { AuthProvider } from "@/lib/auth-context";
 import { Toaster } from "@/components/ui/sonner";
 import "./globals.css";
+import { GraduationCap } from "lucide-react";
 
 const inter = Inter({ subsets: ["latin"] });
 
@@ -20,7 +21,18 @@ export const viewport = {
 };
 
 export default function RootLayout({ children }) {
-  return (
+  return ( true ? (
+    <html lang="en">
+      <body className={`font-sans antialiased`}>
+          <div className="min-h-screen flex items-center justify-center bg-black text-white">
+          <div className="animate-pulse flex flex-col items-center gap-4">
+            <GraduationCap className="h-12 w-12 text-primary" />
+            <p className="text-muted-foreground">Working fine! Jai Siya Ram</p>
+          </div>
+        </div>
+      </body>
+    </html>) : (
+    
     <html lang="en">
       <body className={`font-sans antialiased`}>
         <AuthProvider>
@@ -30,5 +42,6 @@ export default function RootLayout({ children }) {
         <Analytics />
       </body>
     </html>
+    )
   );
 }
