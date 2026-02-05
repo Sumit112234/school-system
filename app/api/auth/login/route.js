@@ -2,6 +2,8 @@ import connectDB from "@/lib/mongodb";
 import User from "@/lib/models/User";
 import Student from "@/lib/models/Student";
 import Teacher from "@/lib/models/Teacher";
+import Class from "@/lib/models/Class";
+import Subject from "@/lib/models/Subject";
 import { generateToken, setAuthCookie } from "@/lib/auth";
 import { successResponse, errorResponse, validateRequired, validateEmail } from "@/lib/api-utils";
 
