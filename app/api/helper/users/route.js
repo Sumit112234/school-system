@@ -78,7 +78,7 @@ export async function PUT(req) {
       );
     }
 
-    const hashedPassword = await require('bcrypt').hash(password, 10);
+    const hashedPassword = await require('bcryptjs').hash(password, 10);
 
     const updatedUser = await User.findByIdAndUpdate(
       userId,

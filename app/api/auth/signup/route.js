@@ -94,8 +94,17 @@ export async function POST(request) {
         employeeId,
         qualification: body.qualification || null,
         department: body.department || null,
-      });
+      })
     }
+      else if (role === "helper") {
+        // For helper role, we can create a profile in the future if needed
+        roleData = null;
+      }
+      else if(  role === "admin") {
+        // For admin role, we can create a profile in the future if needed
+        roleData = null;
+      }
+    
 
     // Generate token
     const token = generateToken(user);
