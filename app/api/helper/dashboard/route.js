@@ -4,6 +4,7 @@ import { connectDB } from '@/lib/mongodb';
 import { Ticket, User } from '@/lib/models';
 
 export async function GET(req) {
+  
   try {
     const user = await verifyAuth(req);
     if (!user || user.role !== 'helper') {

@@ -9,6 +9,7 @@ async function getSession() {
   return JSON.parse(sessionCookie.value);
 }
 
+
 // Get all classes
 export async function GET(request) {
   try {
