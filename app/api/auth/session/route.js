@@ -2,6 +2,8 @@ import { getCurrentUser } from "@/lib/auth";
 import connectDB from "@/lib/mongodb";
 import Student from "@/lib/models/Student";
 import Teacher from "@/lib/models/Teacher";
+import Class from "@/lib/models/Class";
+import Subject from "@/lib/models/Subject";
 import { successResponse, errorResponse } from "@/lib/api-utils";
 
 export async function GET() {

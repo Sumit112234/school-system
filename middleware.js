@@ -20,7 +20,7 @@ export function middleware(req) {
   )
   res.headers.set("Access-Control-Allow-Credentials", "true")
 
-  // Handle preflight
+  
   if (req.method === "OPTIONS") {
     return new NextResponse(null, { headers: res.headers })
   }
