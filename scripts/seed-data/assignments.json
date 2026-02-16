@@ -1,0 +1,54 @@
+[
+  {
+    "_id": "507f1f77bcf86cd799442001",
+    "title": "Algebra Problems Chapter 5",
+    "description": "Solve all problems from page 120-125. Focus on quadratic equations.",
+    "classId": "507f1f77bcf86cd799440001",
+    "teacherId": "507f1f77bcf86cd799434001",
+    "subjectId": "507f1f77bcf86cd799439001",
+    "dueDate": "2024-02-20T23:59:59Z",
+    "maxMarks": 50,
+    "documents": [
+      {
+        "name": "assignment-guide.pdf",
+        "url": "https://example.com/files/assignment-guide.pdf"
+      }
+    ],
+    "submissions": ["507f1f77bcf86cd799443001", "507f1f77bcf86cd799443002"],
+    "createdAt": "2024-02-10T10:00:00Z",
+    "updatedAt": "2024-02-10T10:00:00Z"
+  },
+  {
+    "_id": "507f1f77bcf86cd799442002",
+    "title": "English Essay: Impact of Technology",
+    "description": "Write a 500-word essay on how technology has changed human communication.",
+    "classId": "507f1f77bcf86cd799440001",
+    "teacherId": "507f1f77bcf86cd799434002",
+    "subjectId": "507f1f77bcf86cd799439002",
+    "dueDate": "2024-02-25T23:59:59Z",
+    "maxMarks": 40,
+    "documents": [],
+    "submissions": [],
+    "createdAt": "2024-02-10T11:30:00Z",
+    "updatedAt": "2024-02-10T11:30:00Z"
+  },
+  {
+    "_id": "507f1f77bcf86cd799442003",
+    "title": "Science Experiment Report",
+    "description": "Complete the pH indicator experiment and submit a detailed report.",
+    "classId": "507f1f77bcf86cd799440002",
+    "teacherId": "507f1f77bcf86cd799434003",
+    "subjectId": "507f1f77bcf86cd799439003",
+    "dueDate": "2024-02-22T23:59:59Z",
+    "maxMarks": 60,
+    "documents": [
+      {
+        "name": "experiment-instructions.pdf",
+        "url": "https://example.com/files/experiment-instructions.pdf"
+      }
+    ],
+    "submissions": [],
+    "createdAt": "2024-02-08T09:00:00Z",
+    "updatedAt": "2024-02-08T09:00:00Z"
+  }
+]

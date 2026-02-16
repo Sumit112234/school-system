@@ -1,0 +1,36 @@
+[
+  {
+    "_id": "507f1f77bcf86cd799440001",
+    "name": "Class 10-A",
+    "room": 10,
+    "section": "A",
+    "academicYear" : "2026",
+    "classTeacher": "507f1f77bcf86cd799438001",
+    "subjects": ["507f1f77bcf86cd799439001", "507f1f77bcf86cd799439002", "507f1f77bcf86cd799439003"],
+    "students": ["507f1f77bcf86cd799437001", "507f1f77bcf86cd799437002", "507f1f77bcf86cd799437003"],
+    "totalStrength": 3
+  },
+  {
+    "_id": "507f1f77bcf86cd799440002",
+    "name": "Class 10-B",
+    "room": 10,
+    "section": "B",
+    "academicYear" : "2026",
+    "classTeacher": "507f1f77bcf86cd799438002",
+    "subjects": ["507f1f77bcf86cd799439001", "507f1f77bcf86cd799439002", "507f1f77bcf86cd799439004"],
+    "students": ["507f1f77bcf86cd799437004", "507f1f77bcf86cd799437005"],
+    "totalStrength": 2
+  },
+
+  {
+    "_id": "507f1f77bcf86cd799440003",
+    "name": "Class 12-A",
+    "room": 12,
+    "section": "A",
+    "academicYear" : "2026",
+    "classTeacher": "507f1f77bcf86cd799438003",
+    "subjects": ["507f1f77bcf86cd799439001", "507f1f77bcf86cd799439002", "507f1f77bcf86cd799439003"],
+    "students": ["507f1f77bcf86cd799437006", "507f1f77bcf86cd799437007"],
+    "totalStrength": 2
+  }
+]

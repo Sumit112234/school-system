@@ -1,0 +1,59 @@
+[
+  {
+    "_id": "507f1f77bcf86cd799439001",
+    "name": "Mathematics",
+    "code": "MATH101",
+    "description": "Fundamental concepts of mathematics including algebra, geometry, and trigonometry",
+    "isOptional": false
+  },
+  {
+    "_id": "507f1f77bcf86cd799439002",
+    "name": "English",
+    "code": "ENG101",
+    "description": "English language, literature, and communication skills",
+    "isOptional": false
+  },
+  {
+    "_id": "507f1f77bcf86cd799439003",
+    "name": "Science",
+    "code": "SCI101",
+    "description": "Physics, Chemistry, and Biology fundamentals",
+    "isOptional": false
+  },
+  {
+    "_id": "507f1f77bcf86cd799439004",
+    "name": "History",
+    "code": "HIS101",
+    "description": "World and Indian history",
+    "isOptional": false
+  },
+  {
+    "_id": "507f1f77bcf86cd799439005",
+    "name": "Geography",
+    "code": "GEO101",
+    "description": "Physical and human geography",
+    "isOptional": false
+  },
+  
+  {
+    "_id": "507f1f77bcf86cd799439006",
+    "name": "Computer Science",
+    "code": "CS101",
+    "description": "Programming and computer fundamentals",
+    "isOptional": true
+  },
+  {
+    "_id": "507f1f77bcf86cd799439007",
+    "name": "Physical Education",
+    "code": "PE101",
+    "description": "Sports and fitness activities",
+    "isOptional": true
+  },
+  {
+    "_id": "507f1f77bcf86cd799439008",
+    "name": "Art",
+    "code": "ART101",
+    "description": "Drawing, painting, and visual arts",
+    "isOptional": true
+  }
+]

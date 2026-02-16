@@ -1,0 +1,36 @@
+[
+  {
+    "_id": "507f1f77bcf86cd799434001",
+    "user": "507f1f77bcf86cd799438001",
+    "employeeId": "TCH001",
+    
+    
+    "qualification": "M.Sc. Mathematics, B.Ed",
+    "experience": 8,
+    "dateOfJoining": "2016-06-01",
+    "department": "Mathematics"
+  },
+  {
+    "_id": "507f1f77bcf86cd799434002",
+    "user": "507f1f77bcf86cd799438002",
+    "employeeId": "TCH002",
+    
+    
+    "qualification": "M.A. English, B.Ed",
+    "experience": 6,
+    "dateOfJoining": "2018-06-01",
+    "department": "English"
+  },
+
+  {
+    "_id": "507f1f77bcf86cd799434003",
+    "user": "507f1f77bcf86cd799438003",
+    "employeeId": "TCH003",
+    
+    
+    "qualification": "M.Sc. Physics, B.Ed",
+    "experience": 10,
+    "dateOfJoining": "2014-06-01",
+    "department": "Science"
+  }
+]

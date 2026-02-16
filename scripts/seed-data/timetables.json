@@ -1,0 +1,52 @@
+[
+  {
+    "_id": "507f1f77bcf86cd799441001",
+    "classId": "507f1f77bcf86cd799440001",
+    "schedule": [
+      {
+        "day": "Monday",
+        "periods": [
+          {
+            "periodNumber": 1,
+            "startTime": "09:00",
+            "endTime": "10:00",
+            "subjectId": "507f1f77bcf86cd799439001",
+            "teacherId": "507f1f77bcf86cd799434001",
+            "room": "101"
+          },
+          {
+            "periodNumber": 2,
+            "startTime": "10:00",
+            "endTime": "11:00",
+            "subjectId": "507f1f77bcf86cd799439002",
+            "teacherId": "507f1f77bcf86cd799434002",
+            "room": "102"
+          }
+        ]
+      },
+      {
+        "day": "Tuesday",
+        "periods": [
+          {
+            "periodNumber": 1,
+            "startTime": "09:00",
+            "endTime": "10:00",
+            "subjectId": "507f1f77bcf86cd799439003",
+            "teacherId": "507f1f77bcf86cd799434003",
+            "room": "103"
+          },
+          {
+            "periodNumber": 2,
+            "startTime": "10:00",
+            "endTime": "11:00",
+            "subjectId": "507f1f77bcf86cd799439001",
+            "teacherId": "507f1f77bcf86cd799434001",
+            "room": "101"
+          }
+        ]
+      }
+    ],
+    "validFrom": "2024-01-01",
+    "validTo": "2024-12-31"
+  }
+]

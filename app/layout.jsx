@@ -21,7 +21,7 @@ export const viewport = {
 };
 
 export default function RootLayout({ children }) {
-  return ( false ? (
+  return ( true ? (
     <html lang="en">
       <body className={`font-sans antialiased`}>
           <div className="min-h-screen flex items-center justify-center bg-black text-white">

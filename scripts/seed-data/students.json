@@ -1,0 +1,100 @@
+[
+  {
+    "_id": "507f1f77bcf86cd799437001",
+    "rollNumber": 1,
+    "parentEmail": "parent1@email.com",
+    "parentPhone": "9876543240",
+    "dateOfBirth": "2008-05-15",
+    "fatherName": "Vikram Verma",
+    "motherName": "Anjali Verma",
+    "bloodGroup": "O+",
+    "admissionDate": "2022-06-01",
+    "studentId": "STU001",
+    
+    "user": "507f1f77bcf86cd799435001"
+  },
+  {
+    "_id": "507f1f77bcf86cd799437002",
+    "rollNumber": 2,
+    "parentEmail": "parent2@email.com",
+    "parentPhone": "9876543241",
+    "dateOfBirth": "2008-07-20",
+    "fatherName": "Rajesh Gupta",
+    "motherName": "Geeta Gupta",
+    "bloodGroup": "A+",
+    "admissionDate": "2022-06-01",
+    "studentId": "STU002",
+    
+    "user": "507f1f77bcf86cd799435002"
+  },
+  {
+    "_id": "507f1f77bcf86cd799437003",
+    "rollNumber": 3,
+    "parentEmail": "parent3@email.com",
+    "parentPhone": "9876543242",
+    "dateOfBirth": "2008-09-10",
+    "fatherName": "Ashok Patel",
+    "motherName": "Priya Patel",
+    "bloodGroup": "B+",
+    "admissionDate": "2022-06-01",
+    "studentId": "STU003",
+    
+    "user": "507f1f77bcf86cd799435003"
+  },
+  {
+    "_id": "507f1f77bcf86cd799437004",
+    "rollNumber": 1,
+    "parentEmail": "parent4@email.com",
+    "parentPhone": "9876543243",
+    "dateOfBirth": "2008-03-25",
+    "fatherName": "Ravi Mittal",
+    "motherName": "Deepika Mittal",
+    "bloodGroup": "O+",
+    "admissionDate": "2022-06-01",
+    "studentId": "STU004",
+    
+    "user": "507f1f77bcf86cd799435004"
+  },
+  {
+    "_id": "507f1f77bcf86cd799437005",
+    "rollNumber": 2,
+    "parentEmail": "parent5@email.com",
+    "parentPhone": "9876543244",
+    "dateOfBirth": "2008-11-30",
+    "fatherName": "Sanjay Reddy",
+    "motherName": "Lakshmi Reddy",
+    "bloodGroup": "B-",
+    "admissionDate": "2022-06-01",
+    "studentId": "STU005",
+    
+    "user": "507f1f77bcf86cd799435005"
+  },
+  {
+    "_id": "507f1f77bcf86cd799437006",
+    "rollNumber": 1,
+    "parentEmail": "parent6@email.com",
+    "parentPhone": "9876543245",
+    "dateOfBirth": "2006-04-12",
+    "fatherName": "Anil Desai",
+    "motherName": "Sunita Desai",
+    "bloodGroup": "AB+",
+    "admissionDate": "2020-06-01",
+    "studentId": "STU006",
+    
+    "user": "507f1f77bcf86cd799435006"
+  },
+  {
+    "_id": "507f1f77bcf86cd799437007",
+    "rollNumber": 2,
+    "parentEmail": "parent7@email.com",
+    "parentPhone": "9876543246",
+    "dateOfBirth": "2006-08-18",
+    "fatherName": "Farhan Khan",
+    "motherName": "Fatima Khan",
+    "bloodGroup": "A-",
+    "admissionDate": "2020-06-01",
+    "studentId": "STU007",
+    
+    "user": "507f1f77bcf86cd799435007"
+  }
+]

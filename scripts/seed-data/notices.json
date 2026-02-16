@@ -1,0 +1,43 @@
+[
+  {
+    "_id": "507f1f77bcf86cd799450001",
+    "title": "School Annual Day Celebration",
+    "content": "We are excited to announce our Annual Day celebration on March 15, 2024. All students and parents are invited to participate in this grand event.",
+    "postedBy": "507f1f77bcf86cd799436001",
+    "audience": ["all", "students", "parents"],
+    "priority": "high",
+    "attachments": [],
+    "expiryDate": "2024-03-15T23:59:59Z",
+    "createdAt": "2024-02-05T10:00:00Z",
+    "updatedAt": "2024-02-05T10:00:00Z"
+  },
+  {
+    "_id": "507f1f77bcf86cd799450002",
+    "title": "Mid-Term Exams Schedule",
+    "content": "Mid-term examinations will commence from February 26 and conclude by March 10, 2024. Check the exam schedule posted on the notice board for specific dates and timings.",
+    "postedBy": "507f1f77bcf86cd799436001",
+    "audience": ["students", "teachers"],
+    "priority": "high",
+    "attachments": [
+      {
+        "name": "exam-schedule.pdf",
+        "url": "https://example.com/files/exam-schedule.pdf"
+      }
+    ],
+    "expiryDate": "2024-03-10T23:59:59Z",
+    "createdAt": "2024-02-03T09:00:00Z",
+    "updatedAt": "2024-02-03T09:00:00Z"
+  },
+  {
+    "_id": "507f1f77bcf86cd799450003",
+    "title": "Sports Day Registration Open",
+    "content": "Registration for Sports Day is now open! Students interested in participating in various sports events can register through the PE department.",
+    "postedBy": "507f1f77bcf86cd799436001",
+    "audience": ["students"],
+    "priority": "medium",
+    "attachments": [],
+    "expiryDate": "2024-02-20T23:59:59Z",
+    "createdAt": "2024-02-01T14:30:00Z",
+    "updatedAt": "2024-02-01T14:30:00Z"
+  }
+]
