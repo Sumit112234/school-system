@@ -2,7 +2,7 @@ import mongoose from "mongoose";
 import bcrypt from "bcryptjs";
 import User from "../lib/models/User.js";
 
-const MONGODB_URI =  'mongodb+srv://Sumit:SumitDb112234@cluster0.tvbous1.mongodb.net/school?retryWrites=true&w=majority';
+const MONGODB_URI =  ''
 
 async function resetPasswords() {
   await mongoose.connect(MONGODB_URI);

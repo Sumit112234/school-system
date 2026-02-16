@@ -18,7 +18,7 @@ const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 
 const MONGODB_URI =
-  "mongodb+srv://Sumit:SumitDb112234@cluster0.tvbous1.mongodb.net/school?retryWrites=true&w=majority";
+ ''
 const SEED_DATA_DIR = path.join(__dirname, "./seed-data");
 
 /* ===== Collection → Model mapping ===== */
