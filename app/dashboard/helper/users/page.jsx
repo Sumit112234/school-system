@@ -4,6 +4,7 @@ import { useState } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
+import { useHelperUsers } from "@/hooks/use-admin-data";
 import {
   Table,
   TableBody,
@@ -27,13 +28,43 @@ import {
   GraduationCap,
   Mail,
   Key,
+  Loader2,
+  AlertCircle,
 } from "lucide-react";
+import { toast } from "sonner";
+
+function LoadingState() {
+  return (
+    <div className="flex items-center justify-center min-h-96">
+      <div className="text-center">
+        <Loader2 className="h-8 w-8 animate-spin mx-auto mb-4 text-primary" />
+        <p className="text-muted-foreground">Loading users...</p>
+      </div>
+    </div>
+  );
+}
 
 export default function HelperUsersPage() {
   const [searchQuery, setSearchQuery] = useState("");
   const [roleFilter, setRoleFilter] = useState("all");
+  const { users, loading, error, refetch, resetPassword, unlockUser } = useHelperUsers();
 
-  const users = [
+  if (loading) {
+    return <LoadingState />;
+  }
+
+  if (error) {
+    return (
+      <div className="text-center py-12">
+        <AlertCircle className="h-12 w-12 text-destructive mx-auto mb-4" />
+        <p className="text-destructive mb-4">Error loading users: {error}</p>
+        <Button onClick={refetch}>Try Again</Button>
+      </div>
+    );
+  }
+
+  const usersList = users?.data || [];
+  const mockUsers = [
     { id: "USR001", name: "Sarah Johnson", email: "sarah@school.edu", role: "student", class: "10A", lastLogin: "Today 09:30", status: "active" },
     { id: "USR002", name: "Dr. John Smith", email: "john@school.edu", role: "teacher", subject: "Mathematics", lastLogin: "Today 08:00", status: "active" },
     { id: "USR003", name: "Mike Thompson", email: "mike@school.edu", role: "student", class: "10A", lastLogin: "Yesterday", status: "active" },

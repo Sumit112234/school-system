@@ -1,22 +1,52 @@
 "use client";
 
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
+import { Button } from "@/components/ui/button";
 import { Progress } from "@/components/ui/progress";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { mockGrades, mockSubjects, mockAssignments } from "@/lib/mock-data";
-import { BarChart3, TrendingUp, Award, BookOpen } from "lucide-react";
+import { useStudentGrades } from "@/hooks/use-student-data";
+import { BarChart3, TrendingUp, Award, BookOpen, Loader2, AlertCircle } from "lucide-react";
+
+function LoadingState() {
+  return (
+    <div className="flex items-center justify-center min-h-96">
+      <div className="text-center">
+        <Loader2 className="h-8 w-8 animate-spin mx-auto mb-4 text-primary" />
+        <p className="text-muted-foreground">Loading your grades...</p>
+      </div>
+    </div>
+  );
+}
 
 export default function StudentGrades() {
+  const { grades, loading, error, refetch } = useStudentGrades();
+
+  if (loading) {
+    return <LoadingState />;
+  }
+
+  if (error) {
+    return (
+      <div className="text-center py-12">
+        <AlertCircle className="h-12 w-12 text-destructive mx-auto mb-4" />
+        <p className="text-destructive mb-4">Error loading grades: {error}</p>
+        <Button onClick={refetch}>Try Again</Button>
+      </div>
+    );
+  }
+
+  const gradesList = grades?.data || [];
+  
   // Calculate overall average
-  const totalMarks = mockGrades.reduce((sum, g) => sum + g.marks, 0);
-  const totalMaxMarks = mockGrades.reduce((sum, g) => sum + g.maxMarks, 0);
+  const totalMarks = gradesList.reduce((sum, g) => sum + (g.marks || 0), 0);
+  const totalMaxMarks = gradesList.reduce((sum, g) => sum + (g.maxMarks || 0), 0);
   const overallPercentage = totalMaxMarks > 0 ? Math.round((totalMarks / totalMaxMarks) * 100) : 0;
 
   // Grade by subject
-  const gradesBySubject = mockSubjects.map((subject) => {
-    const subjectGrades = mockGrades.filter((g) => g.subjectId === subject.id);
-    const subjectTotal = subjectGrades.reduce((sum, g) => sum + g.marks, 0);
-    const subjectMaxTotal = subjectGrades.reduce((sum, g) => sum + g.maxMarks, 0);
+  const gradesBySubject = (grades?.subjects || []).map((subject) => {
+    const subjectGrades = gradesList.filter((g) => g.subjectId === subject._id);
+    const subjectTotal = subjectGrades.reduce((sum, g) => sum + (g.marks || 0), 0);
+    const subjectMaxTotal = subjectGrades.reduce((sum, g) => sum + (g.maxMarks || 0), 0);
     const percentage = subjectMaxTotal > 0 ? Math.round((subjectTotal / subjectMaxTotal) * 100) : 0;
     return {
       ...subject,

@@ -4,6 +4,7 @@ import { useState } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
+import { useAdminStudents } from "@/hooks/use-admin-data";
 import {
   Table,
   TableBody,
@@ -36,14 +37,43 @@ import {
   Download,
   Filter,
   GraduationCap,
+  Loader2,
+  AlertCircle,
 } from "lucide-react";
 import Link from "next/link";
 
+function LoadingState() {
+  return (
+    <div className="flex items-center justify-center min-h-96">
+      <div className="text-center">
+        <Loader2 className="h-8 w-8 animate-spin mx-auto mb-4 text-primary" />
+        <p className="text-muted-foreground">Loading students...</p>
+      </div>
+    </div>
+  );
+}
+
 export default function AdminStudentsPage() {
   const [searchQuery, setSearchQuery] = useState("");
-  const [classFilter, setClassFilter] = useState("all");
+  const [filterStatus, setFilterStatus] = useState("all");
+  const { students, loading, error, refetch } = useAdminStudents();
 
-  const students = [
+  if (loading) {
+    return <LoadingState />;
+  }
+
+  if (error) {
+    return (
+      <div className="text-center py-12">
+        <AlertCircle className="h-12 w-12 text-destructive mx-auto mb-4" />
+        <p className="text-destructive mb-4">Error loading students: {error}</p>
+        <Button onClick={refetch}>Try Again</Button>
+      </div>
+    );
+  }
+
+  const studentsList = students?.data || [];
+  const mockStudentData = [
     { id: "STU001", name: "Sarah Johnson", class: "10A", email: "sarah@school.edu", phone: "555-0101", status: "active", gpa: 3.8 },
     { id: "STU002", name: "Mike Thompson", class: "10A", email: "mike@school.edu", phone: "555-0102", status: "active", gpa: 3.5 },
     { id: "STU003", name: "Emily Davis", class: "10B", email: "emily@school.edu", phone: "555-0103", status: "active", gpa: 3.9 },

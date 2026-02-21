@@ -5,6 +5,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { Button } from "@/components/ui/button";
 import { Progress } from "@/components/ui/progress";
 import Link from "next/link";
+import { useTeacherDashboard, useTeacherAssignments } from "@/hooks/use-teacher-data";
 import {
   Users,
   BookOpen,
@@ -15,41 +16,69 @@ import {
   CheckCircle2,
   AlertCircle,
   Calendar,
+  Loader2,
 } from "lucide-react";
-import { mockDashboardStats, mockAssignments, mockSchedule, mockClasses } from "@/lib/mock-data";
+
+function LoadingState() {
+  return (
+    <div className="flex items-center justify-center min-h-96">
+      <div className="text-center">
+        <Loader2 className="h-8 w-8 animate-spin mx-auto mb-4 text-primary" />
+        <p className="text-muted-foreground">Loading your dashboard...</p>
+      </div>
+    </div>
+  );
+}
 
 export default function TeacherDashboard() {
   const { user } = useAuth();
-  const stats = mockDashboardStats.teacher;
+  const { dashboardData, loading, error } = useTeacherDashboard();
+  const { assignments, loading: assignmentsLoading } = useTeacherAssignments();
+  console.log("Dashboard Data:", assignments);
 
-  const todaySchedule = mockSchedule.filter((s) => s.day === "Monday").slice(0, 4);
-  const pendingAssignments = mockAssignments.filter((a) => a.status === "active").slice(0, 3);
+  if (loading) {
+    return <LoadingState />;
+  }
+
+  if (error) {
+    return (
+      <div className="text-center py-12">
+        <AlertCircle className="h-12 w-12 text-destructive mx-auto mb-4" />
+        <p className="text-destructive mb-4">Error loading dashboard: {error}</p>
+        <Button onClick={() => window.location.reload()}>Try Again</Button>
+      </div>
+    );
+  }
+
+  const stats = dashboardData?.stats || {};
+  const todaySchedule = dashboardData?.todaySchedule || [];
+  const pendingAssignments = (assignments?.data?.data || []).filter((a) => a.status === "pending_review").slice(0, 3);
 
   const statCards = [
     {
       title: "My Classes",
-      value: stats.totalClasses,
+      value: stats.totalClasses || 0,
       icon: BookOpen,
       color: "text-teacher",
       bgColor: "bg-teacher/10",
     },
     {
       title: "Total Students",
-      value: stats.totalStudents,
+      value: stats.totalStudents || 0,
       icon: Users,
       color: "text-student",
       bgColor: "bg-student/10",
     },
     {
       title: "Pending Reviews",
-      value: stats.pendingAssignments,
+      value: stats.pendingAssignments || 0,
       icon: FileText,
       color: "text-warning",
       bgColor: "bg-warning/10",
     },
     {
       title: "Avg. Attendance",
-      value: `${stats.averageAttendance}%`,
+      value: `${stats.averageAttendance || 0}%`,
       icon: ClipboardList,
       color: "text-success",
       bgColor: "bg-success/10",
@@ -190,7 +219,7 @@ export default function TeacherDashboard() {
             </Link>
           </CardHeader>
           <CardContent>
-            <div className="grid grid-cols-2 gap-3">
+            {/* <div className="grid grid-cols-2 gap-3">
               {mockClasses.slice(0, 4).map((cls) => (
                 <div key={cls.id} className="p-4 rounded-lg border text-center">
                   <div className="flex h-10 w-10 items-center justify-center rounded-full bg-teacher/10 mx-auto mb-2">
@@ -200,7 +229,7 @@ export default function TeacherDashboard() {
                   <p className="text-xs text-muted-foreground">{cls.studentCount} students</p>
                 </div>
               ))}
-            </div>
+            </div> */}
           </CardContent>
         </Card>
 

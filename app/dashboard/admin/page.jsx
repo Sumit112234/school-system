@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useAdminStats } from "@/hooks/use-admin-data";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import {
@@ -14,55 +14,71 @@ import {
   DollarSign,
   UserCheck,
   AlertTriangle,
+  Loader2,
 } from "lucide-react";
 import Link from "next/link";
 
+function LoadingState() {
+  return (
+    <div className="flex items-center justify-center min-h-96">
+      <div className="text-center">
+        <Loader2 className="h-8 w-8 animate-spin mx-auto mb-4 text-primary" />
+        <p className="text-muted-foreground">Loading admin dashboard...</p>
+      </div>
+    </div>
+  );
+}
+
 export default function AdminDashboard() {
+  const { stats: dashboardStats, loading, error } = useAdminStats();
+
+  if (loading) {
+    return <LoadingState />;
+  }
+
+  if (error) {
+    return (
+      <div className="text-center py-12">
+        <AlertTriangle className="h-12 w-12 text-destructive mx-auto mb-4" />
+        <p className="text-destructive mb-4">Error loading dashboard: {error}</p>
+        <Button onClick={() => window.location.reload()}>Try Again</Button>
+      </div>
+    );
+  }
+
   const stats = [
     {
       title: "Total Students",
-      value: "1,234",
-      change: "+12%",
+      value: dashboardStats?.totalStudents || "0",
+      change: dashboardStats?.studentChange || "+0%",
       icon: GraduationCap,
       color: "bg-student",
     },
     {
       title: "Total Teachers",
-      value: "86",
-      change: "+3%",
+      value: dashboardStats?.totalTeachers || "0",
+      change: dashboardStats?.teacherChange || "+0%",
       icon: Users,
       color: "bg-teacher",
     },
     {
       title: "Total Classes",
-      value: "48",
-      change: "+5%",
+      value: dashboardStats?.totalClasses || "0",
+      change: dashboardStats?.classChange || "+0%",
       icon: Building,
       color: "bg-admin",
     },
     {
-      title: "Revenue",
-      value: "$45,678",
-      change: "+18%",
-      icon: DollarSign,
+      title: "Active Subjects",
+      value: dashboardStats?.totalSubjects || "0",
+      change: dashboardStats?.subjectChange || "+0%",
+      icon: BookOpen,
       color: "bg-helper",
     },
   ];
 
-  const recentActivities = [
-    { action: "New student enrolled", name: "Sarah Johnson", time: "2 min ago", type: "enrollment" },
-    { action: "Assignment submitted", name: "Math Class 10A", time: "15 min ago", type: "assignment" },
-    { action: "Fee payment received", name: "Mike Thompson", time: "1 hour ago", type: "payment" },
-    { action: "Leave request", name: "Mr. David Wilson", time: "2 hours ago", type: "leave" },
-    { action: "New teacher joined", name: "Dr. Emily Brown", time: "3 hours ago", type: "staff" },
-  ];
-
-  const pendingApprovals = [
-    { type: "Leave Request", count: 5, urgent: true },
-    { type: "Fee Waivers", count: 3, urgent: false },
-    { type: "New Enrollments", count: 12, urgent: true },
-    { type: "Document Verification", count: 8, urgent: false },
-  ];
+  const recentActivities = dashboardStats?.recentActivities || [];
+  const pendingApprovals = dashboardStats?.pendingApprovals || [];
 
   const quickActions = [
     { label: "Add Student", href: "/dashboard/admin/students/add", icon: GraduationCap },

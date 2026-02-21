@@ -1,5 +1,8 @@
 import connectDB from "@/lib/mongodb";
 import Class from "@/lib/models/Class";
+import User from "@/lib/models/User";
+import Subject from "@/lib/models/Subject";
+import Teacher from "@/lib/models/Teacher";
 import { requireAdmin } from "@/lib/auth";
 import { 
   successResponse, 

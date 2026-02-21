@@ -2,15 +2,44 @@
 
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
-import { mockSchedule } from "@/lib/mock-data";
-import { Clock, MapPin } from "lucide-react";
+import { Button } from "@/components/ui/button";
+import { useStudentTimetable } from "@/hooks/use-student-data";
+import { Clock, MapPin, Loader2, AlertCircle } from "lucide-react";
+
+function LoadingState() {
+  return (
+    <div className="flex items-center justify-center min-h-96">
+      <div className="text-center">
+        <Loader2 className="h-8 w-8 animate-spin mx-auto mb-4 text-primary" />
+        <p className="text-muted-foreground">Loading your timetable...</p>
+      </div>
+    </div>
+  );
+}
 
 export default function StudentTimetable() {
+  const { timetable, loading, error, refetch } = useStudentTimetable();
+
+  if (loading) {
+    return <LoadingState />;
+  }
+
+  if (error) {
+    return (
+      <div className="text-center py-12">
+        <AlertCircle className="h-12 w-12 text-destructive mx-auto mb-4" />
+        <p className="text-destructive mb-4">Error loading timetable: {error}</p>
+        <Button onClick={refetch}>Try Again</Button>
+      </div>
+    );
+  }
+
+  const scheduleData = timetable?.data || [];
   const days = ["Monday", "Tuesday", "Wednesday", "Thursday", "Friday"];
-  const timeSlots = ["08:00", "09:00", "10:00", "11:00", "12:00", "13:00", "14:00", "15:00"];
+  const timeSlots = Array.from(new Set(scheduleData.map((s) => s.startTime))).sort();
 
   const getScheduleForSlot = (day, time) => {
-    return mockSchedule.find((s) => s.day === day && s.time === time);
+    return scheduleData.find((s) => s.day === day && s.startTime === time);
   };
 
   const getSubjectColor = (subjectName) => {

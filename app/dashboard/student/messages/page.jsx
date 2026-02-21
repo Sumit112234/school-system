@@ -15,41 +15,74 @@ import {
   DialogTitle,
   DialogTrigger,
 } from "@/components/ui/dialog";
-import { mockMessages, mockUsers } from "@/lib/mock-data";
-import { Search, Mail, Send, Plus, Reply, User } from "lucide-react";
+import { useStudentMessages } from "@/hooks/use-student-data";
+import { Search, Mail, Send, Plus, Reply, User, Loader2, AlertCircle } from "lucide-react";
 import { toast } from "sonner";
+
+function LoadingState() {
+  return (
+    <div className="flex items-center justify-center min-h-96">
+      <div className="text-center">
+        <Loader2 className="h-8 w-8 animate-spin mx-auto mb-4 text-primary" />
+        <p className="text-muted-foreground">Loading your messages...</p>
+      </div>
+    </div>
+  );
+}
 
 export default function StudentMessages() {
   const [searchQuery, setSearchQuery] = useState("");
   const [selectedMessage, setSelectedMessage] = useState(null);
   const [replyText, setReplyText] = useState("");
   const [newMessage, setNewMessage] = useState({ recipient: "", subject: "", content: "" });
+  const { messages, loading, error, refetch, sendMessage, replyToMessage } = useStudentMessages();
 
-  const filteredMessages = mockMessages.filter(
+  if (loading) {
+    return <LoadingState />;
+  }
+
+  if (error) {
+    return (
+      <div className="text-center py-12">
+        <AlertCircle className="h-12 w-12 text-destructive mx-auto mb-4" />
+        <p className="text-destructive mb-4">Error loading messages: {error}</p>
+        <Button onClick={refetch}>Try Again</Button>
+      </div>
+    );
+  }
+
+  const messagesList = messages?.data || [];
+  const filteredMessages = messagesList.filter(
     (msg) =>
-      msg.subject.toLowerCase().includes(searchQuery.toLowerCase()) ||
-      msg.senderName.toLowerCase().includes(searchQuery.toLowerCase())
+      msg.subject?.toLowerCase().includes(searchQuery.toLowerCase()) ||
+      msg.senderName?.toLowerCase().includes(searchQuery.toLowerCase())
   );
 
-  const unreadCount = mockMessages.filter((m) => !m.read).length;
+  const unreadCount = messagesList.filter((m) => !m.read).length;
 
-  const handleReply = () => {
+  const handleReply = async () => {
     if (!replyText.trim()) return;
-    toast.success("Reply sent!", {
-      description: `Your reply to ${selectedMessage?.senderName} has been sent.`,
-    });
-    setReplyText("");
-    setSelectedMessage(null);
+    try {
+      await replyToMessage(selectedMessage._id, replyText);
+      toast.success("Reply sent!");
+      setReplyText("");
+      setSelectedMessage(null);
+      refetch();
+    } catch (err) {
+      toast.error("Failed to send reply");
+    }
   };
 
-  const handleNewMessage = () => {
+  const handleNewMessage = async () => {
     if (!newMessage.recipient || !newMessage.subject || !newMessage.content) {
       toast.error("Please fill all fields");
       return;
     }
-    toast.success("Message sent!", {
-      description: `Your message to ${newMessage.recipient} has been sent.`,
-    });
+    // try {
+    //   await sendMessage(newMessage);
+    //   toast.success("Message sent!");
+    //   description: `Your message to ${newMessage.recipient} has been sent.`,
+    // });
     setNewMessage({ recipient: "", subject: "", content: "" });
   };
 

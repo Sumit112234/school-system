@@ -4,6 +4,7 @@ import { useState } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
+import { useAdminTeachers } from "@/hooks/use-admin-data";
 import {
   Table,
   TableBody,
@@ -31,13 +32,42 @@ import {
   Users,
   BookOpen,
   Award,
+  Loader2,
+  AlertCircle,
 } from "lucide-react";
 import Link from "next/link";
 
+function LoadingState() {
+  return (
+    <div className="flex items-center justify-center min-h-96">
+      <div className="text-center">
+        <Loader2 className="h-8 w-8 animate-spin mx-auto mb-4 text-primary" />
+        <p className="text-muted-foreground">Loading teachers...</p>
+      </div>
+    </div>
+  );
+}
+
 export default function AdminTeachersPage() {
   const [searchQuery, setSearchQuery] = useState("");
+  const { teachers, loading, error, refetch } = useAdminTeachers();
 
-  const teachers = [
+  if (loading) {
+    return <LoadingState />;
+  }
+
+  if (error) {
+    return (
+      <div className="text-center py-12">
+        <AlertCircle className="h-12 w-12 text-destructive mx-auto mb-4" />
+        <p className="text-destructive mb-4">Error loading teachers: {error}</p>
+        <Button onClick={refetch}>Try Again</Button>
+      </div>
+    );
+  }
+
+  const teachersList = teachers?.data || [];
+  const mockTeacherData = [
     { id: "TCH001", name: "Dr. John Smith", subject: "Mathematics", email: "john@school.edu", phone: "555-1001", classes: 5, students: 145, status: "active" },
     { id: "TCH002", name: "Ms. Emily Brown", subject: "English", email: "emily@school.edu", phone: "555-1002", classes: 4, students: 120, status: "active" },
     { id: "TCH003", name: "Mr. David Wilson", subject: "Physics", email: "david@school.edu", phone: "555-1003", classes: 3, students: 90, status: "on-leave" },

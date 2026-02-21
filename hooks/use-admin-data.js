@@ -11,6 +11,18 @@ export function useAdminUsers() {
   console.log("Fetched users:", { data, loading, error, refetch });
   return { users: data, loading, error, refetch };
 }
+export function useAdminStudents() {
+  console.log("Fetching students with useAdminStudents hook...");
+  const { data, loading, error, refetch } = useFetch('/api/admin/users?role=student');
+  console.log("Fetched students:", { data, loading, error, refetch });
+  return { students: data, loading, error, refetch };
+}
+export function useAdminTeachers() {
+  console.log("Fetching teachers with useAdminTeachers hook...");
+  const { data, loading, error, refetch } = useFetch('/api/admin/users?role=teacher');
+  console.log("Fetched teachers:", { data, loading, error, refetch });
+  return { teachers: data, loading, error, refetch };
+}
 
 export function useAdminClasses() {
   const { data, loading, error, refetch } = useFetch('/api/admin/classes');

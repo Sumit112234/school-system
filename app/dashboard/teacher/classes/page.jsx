@@ -4,10 +4,42 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import Link from "next/link";
-import { mockClasses, mockSubjects } from "@/lib/mock-data";
-import { BookOpen, Users, Clock, ChevronRight, GraduationCap } from "lucide-react";
+import { useTeacherClasses } from "@/hooks/use-teacher-data";
+import { BookOpen, Users, Clock, ChevronRight, GraduationCap, Loader2, AlertCircle } from "lucide-react";
+
+function LoadingState() {
+  return (
+    <div className="flex items-center justify-center min-h-96">
+      <div className="text-center">
+        <Loader2 className="h-8 w-8 animate-spin mx-auto mb-4 text-primary" />
+        <p className="text-muted-foreground">Loading your classes...</p>
+      </div>
+    </div>
+  );
+}
 
 export default function TeacherClasses() {
+  const { classes, loading, error, refetch } = useTeacherClasses();
+
+  console.log("Classes Data:", classes);
+
+  if (loading) {
+    return <LoadingState />;
+  }
+
+  if (error) {
+    return (
+      <div className="text-center py-12">
+        <AlertCircle className="h-12 w-12 text-destructive mx-auto mb-4" />
+        <p className="text-destructive mb-4">Error loading classes: {error}</p>
+        <Button onClick={refetch}>Try Again</Button>
+      </div>
+    );
+  }
+
+  const classList = classes?.data || [];
+  const totalStudents = classList.reduce((sum, c) => sum + (c.studentCount || 0), 0);
+
   return (
     <div className="space-y-6">
       <div>
@@ -24,7 +56,7 @@ export default function TeacherClasses() {
                 <BookOpen className="h-6 w-6 text-teacher" />
               </div>
               <div>
-                <p className="text-2xl font-bold">{mockClasses.length}</p>
+                <p className="text-2xl font-bold">{classList.length}</p>
                 <p className="text-sm text-muted-foreground">Total Classes</p>
               </div>
             </div>
@@ -37,9 +69,7 @@ export default function TeacherClasses() {
                 <Users className="h-6 w-6 text-student" />
               </div>
               <div>
-                <p className="text-2xl font-bold">
-                  {mockClasses.reduce((sum, c) => sum + c.studentCount, 0)}
-                </p>
+                <p className="text-2xl font-bold">{totalStudents}</p>
                 <p className="text-sm text-muted-foreground">Total Students</p>
               </div>
             </div>
@@ -52,7 +82,7 @@ export default function TeacherClasses() {
                 <GraduationCap className="h-6 w-6 text-warning" />
               </div>
               <div>
-                <p className="text-2xl font-bold">{mockSubjects.length}</p>
+                <p className="text-2xl font-bold">{classes?.subjectsCount || 0}</p>
                 <p className="text-sm text-muted-foreground">Subjects</p>
               </div>
             </div>
@@ -75,7 +105,7 @@ export default function TeacherClasses() {
 
       {/* Classes Grid */}
       <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
-        {mockClasses.map((cls) => (
+        {/* {mockClasses.map((cls) => (
           <Card key={cls.id} className="hover:shadow-md transition-shadow">
             <CardHeader className="pb-3">
               <div className="flex items-center justify-between">
@@ -111,7 +141,7 @@ export default function TeacherClasses() {
               </div>
             </CardContent>
           </Card>
-        ))}
+        ))} */}
       </div>
 
       {/* Subjects */}
@@ -120,7 +150,7 @@ export default function TeacherClasses() {
           <CardTitle>My Subjects</CardTitle>
           <CardDescription>Subjects you teach across all classes</CardDescription>
         </CardHeader>
-        <CardContent>
+        {/* <CardContent>
           <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
             {mockSubjects.map((subject) => (
               <div key={subject.id} className="p-4 rounded-lg border">
@@ -140,7 +170,7 @@ export default function TeacherClasses() {
               </div>
             ))}
           </div>
-        </CardContent>
+        </CardContent> */}
       </Card>
     </div>
   );

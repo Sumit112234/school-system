@@ -6,6 +6,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Badge } from "@/components/ui/badge";
 import { Textarea } from "@/components/ui/textarea";
+import { useHelperTickets } from "@/hooks/use-admin-data";
 import {
   Select,
   SelectContent,
@@ -27,14 +28,44 @@ import {
   Clock,
   User,
   Send,
+  Loader2,
+  AlertCircle,
 } from "lucide-react";
+import { toast } from "sonner";
+
+function LoadingState() {
+  return (
+    <div className="flex items-center justify-center min-h-96">
+      <div className="text-center">
+        <Loader2 className="h-8 w-8 animate-spin mx-auto mb-4 text-primary" />
+        <p className="text-muted-foreground">Loading tickets...</p>
+      </div>
+    </div>
+  );
+}
 
 export default function HelperTicketsPage() {
   const [searchQuery, setSearchQuery] = useState("");
   const [statusFilter, setStatusFilter] = useState("all");
   const [selectedTicket, setSelectedTicket] = useState(null);
+  const { tickets, loading, error, refetch, resolveTicket, addReply } = useHelperTickets();
 
-  const tickets = [
+  if (loading) {
+    return <LoadingState />;
+  }
+
+  if (error) {
+    return (
+      <div className="text-center py-12">
+        <AlertCircle className="h-12 w-12 text-destructive mx-auto mb-4" />
+        <p className="text-destructive mb-4">Error loading tickets: {error}</p>
+        <Button onClick={refetch}>Try Again</Button>
+      </div>
+    );
+  }
+
+  const ticketsList = tickets?.data || [];
+  const mockTickets = [
     {
       id: "TKT-001",
       title: "Cannot access grade portal",

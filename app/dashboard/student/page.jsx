@@ -5,6 +5,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { Button } from "@/components/ui/button";
 import { Progress } from "@/components/ui/progress";
 import Link from "next/link";
+import { useStudentDashboard, useStudentAssignments } from "@/hooks/use-student-data";
 import {
   BookOpen,
   Calendar,
@@ -15,42 +16,69 @@ import {
   ChevronRight,
   CheckCircle2,
   AlertCircle,
+  Loader2,
 } from "lucide-react";
-import { mockDashboardStats, mockAssignments, mockSchedule, mockAnnouncements } from "@/lib/mock-data";
+
+function LoadingState() {
+  return (
+    <div className="flex items-center justify-center min-h-96">
+      <div className="text-center">
+        <Loader2 className="h-8 w-8 animate-spin mx-auto mb-4 text-primary" />
+        <p className="text-muted-foreground">Loading your dashboard...</p>
+      </div>
+    </div>
+  );
+}
 
 export default function StudentDashboard() {
   const { user } = useAuth();
-  const stats = mockDashboardStats.student;
+  const { dashboardData, loading, error } = useStudentDashboard();
+  const { assignments, loading: assignmentsLoading } = useStudentAssignments();
 
-  const todaySchedule = mockSchedule.filter((s) => s.day === "Monday").slice(0, 4);
-  const pendingAssignments = mockAssignments.filter((a) => a.status === "active").slice(0, 3);
-  const recentAnnouncements = mockAnnouncements.slice(0, 2);
+  if (loading) {
+    return <LoadingState />;
+  }
+
+  if (error) {
+    return (
+      <div className="text-center py-12">
+        <AlertCircle className="h-12 w-12 text-destructive mx-auto mb-4" />
+        <p className="text-destructive mb-4">Error loading dashboard: {error}</p>
+        <Button onClick={() => window.location.reload()}>Try Again</Button>
+      </div>
+    );
+  }
+
+  const stats = dashboardData?.stats || {};
+  const todaySchedule = dashboardData?.todaySchedule || [];
+  const pendingAssignments = (assignments?.data || []).filter((a) => a.status === "active").slice(0, 3);
+  const recentAnnouncements = dashboardData?.announcements || [];
 
   const statCards = [
     {
       title: "Attendance Rate",
-      value: `${stats.attendanceRate}%`,
+      value: `${stats.attendanceRate || 0}%`,
       icon: CheckCircle2,
       color: "text-success",
       bgColor: "bg-success/10",
     },
     {
       title: "Pending Assignments",
-      value: stats.pendingAssignments,
+      value: stats.pendingAssignments || 0,
       icon: FileText,
       color: "text-warning",
       bgColor: "bg-warning/10",
     },
     {
       title: "Average Grade",
-      value: `${stats.averageGrade}%`,
+      value: `${stats.averageGrade || 0}%`,
       icon: BarChart3,
       color: "text-student",
       bgColor: "bg-student/10",
     },
     {
       title: "Unread Messages",
-      value: stats.unreadMessages,
+      value: stats.unreadMessages || 0,
       icon: Bell,
       color: "text-destructive",
       bgColor: "bg-destructive/10",

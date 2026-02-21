@@ -2,18 +2,47 @@
 
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
+import { Button } from "@/components/ui/button";
 import { Progress } from "@/components/ui/progress";
-import { mockSubjects, mockClasses, mockGrades } from "@/lib/mock-data";
-import { BookOpen, User, Clock, Award } from "lucide-react";
+import { useStudentClasses } from "@/hooks/use-student-data";
+import { BookOpen, User, Clock, Award, Loader2, AlertCircle } from "lucide-react";
+
+function LoadingState() {
+  return (
+    <div className="flex items-center justify-center min-h-96">
+      <div className="text-center">
+        <Loader2 className="h-8 w-8 animate-spin mx-auto mb-4 text-primary" />
+        <p className="text-muted-foreground">Loading your classes...</p>
+      </div>
+    </div>
+  );
+}
 
 export default function StudentClasses() {
-  const myClass = mockClasses[0]; // Assuming student is in class 10-A
+  const { classData, loading, error, refetch } = useStudentClasses();
+
+  if (loading) {
+    return <LoadingState />;
+  }
+
+  if (error) {
+    return (
+      <div className="text-center py-12">
+        <AlertCircle className="h-12 w-12 text-destructive mx-auto mb-4" />
+        <p className="text-destructive mb-4">Error loading classes: {error}</p>
+        <Button onClick={refetch}>Try Again</Button>
+      </div>
+    );
+  }
+
+  const myClass = classData?.class || {};
+  const subjects = classData?.subjects || [];
 
   const getSubjectProgress = (subjectId) => {
-    const subjectGrades = mockGrades.filter((g) => g.subjectId === subjectId);
+    const subjectGrades = (classData?.grades || []).filter((g) => g.subjectId === subjectId);
     if (subjectGrades.length === 0) return 0;
-    const total = subjectGrades.reduce((sum, g) => sum + g.marks, 0);
-    const max = subjectGrades.reduce((sum, g) => sum + g.maxMarks, 0);
+    const total = subjectGrades.reduce((sum, g) => sum + (g.marks || 0), 0);
+    const max = subjectGrades.reduce((sum, g) => sum + (g.maxMarks || 0), 0);
     return max > 0 ? Math.round((total / max) * 100) : 0;
   };
 
@@ -69,7 +98,6 @@ export default function StudentClasses() {
                     <div className="flex h-12 w-12 items-center justify-center rounded-lg bg-student/10">
                       <BookOpen className="h-6 w-6 text-student" />
                     </div>
-                    
                     <Badge variant="outline">{subject.code}</Badge>
                   </div>
                   

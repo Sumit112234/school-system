@@ -6,38 +6,46 @@ import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Input } from "@/components/ui/input";
 import { Avatar, AvatarFallback } from "@/components/ui/avatar";
-import { mockClasses } from "@/lib/mock-data";
-import { Search, Users, Mail, Eye } from "lucide-react";
+import { useTeacherStudents } from "@/hooks/use-teacher-data";
+import { Search, Users, Mail, Eye, Loader2, AlertCircle } from "lucide-react";
 
-// Generate mock students
-const generateStudents = () => {
-  const names = [
-    "Alex Johnson", "Emily Davis", "Michael Brown", "Sarah Wilson", "David Lee",
-    "Jessica Taylor", "Chris Martin", "Amanda White", "Ryan Clark", "Nicole Lewis",
-    "Jason Harris", "Michelle Young", "Kevin Hall", "Laura Allen", "Brandon King",
-    "Ashley Wright", "Tyler Scott", "Samantha Hill", "Justin Green", "Rachel Adams",
-  ];
-  return names.map((name, index) => ({
-    id: String(index + 1),
-    name,
-    email: `${name.toLowerCase().replace(" ", ".")}@student.school.com`,
-    rollNumber: `2024${String(index + 1).padStart(3, "0")}`,
-    classId: index % 4 < 2 ? "1" : "2",
-    className: index % 4 < 2 ? "10-A" : "10-B",
-    attendance: 85 + Math.floor(Math.random() * 15),
-    grade: 70 + Math.floor(Math.random() * 25),
-  }));
-};
-
-const mockStudents = generateStudents();
+function LoadingState() {
+  return (
+    <div className="flex items-center justify-center min-h-96">
+      <div className="text-center">
+        <Loader2 className="h-8 w-8 animate-spin mx-auto mb-4 text-primary" />
+        <p className="text-muted-foreground">Loading your students...</p>
+      </div>
+    </div>
+  );
+}
 
 export default function TeacherStudents() {
   const [searchQuery, setSearchQuery] = useState("");
   const [selectedClass, setSelectedClass] = useState("all");
+  const { students, classes, loading, error, refetch } = useTeacherStudents();
 
-  const filteredStudents = mockStudents.filter((student) => {
+  if (loading) {
+    return <LoadingState />;
+  }
+
+  if (error) {
+    return (
+      <div className="text-center py-12">
+        <AlertCircle className="h-12 w-12 text-destructive mx-auto mb-4" />
+        <p className="text-destructive mb-4">Error loading students: {error}</p>
+        <Button onClick={refetch}>Try Again</Button>
+      </div>
+    );
+  }
+
+  const studentsList = students?.data || [];
+  const classList = classes?.data || [];
+
+  const filteredStudents = studentsList.filter((student) => {
     const matchesSearch =
-      student.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
+      student.firstName?.toLowerCase().includes(searchQuery.toLowerCase()) ||
+      student.email?.toLowerCase().includes(searchQuery.toLowerCase()) ||
       student.rollNumber.includes(searchQuery);
     const matchesClass = selectedClass === "all" || student.classId === selectedClass;
     return matchesSearch && matchesClass;

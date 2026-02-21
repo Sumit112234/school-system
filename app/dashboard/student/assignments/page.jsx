@@ -7,6 +7,7 @@ import { Badge } from "@/components/ui/badge";
 import { Progress } from "@/components/ui/progress";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Input } from "@/components/ui/input";
+import { useStudentAssignments } from "@/hooks/use-student-data";
 import {
   Dialog,
   DialogContent,
@@ -15,18 +16,44 @@ import {
   DialogTitle,
   DialogTrigger,
 } from "@/components/ui/dialog";
-import { mockAssignments } from "@/lib/mock-data";
-import { FileText, Calendar, Upload, Search, Clock, CheckCircle2 } from "lucide-react";
+import { FileText, Calendar, Upload, Search, Clock, CheckCircle2, Loader2, AlertCircle } from "lucide-react";
 import { toast } from "sonner";
+
+function LoadingState() {
+  return (
+    <div className="flex items-center justify-center min-h-96">
+      <div className="text-center">
+        <Loader2 className="h-8 w-8 animate-spin mx-auto mb-4 text-primary" />
+        <p className="text-muted-foreground">Loading your assignments...</p>
+      </div>
+    </div>
+  );
+}
 
 export default function StudentAssignments() {
   const [searchQuery, setSearchQuery] = useState("");
   const [selectedAssignment, setSelectedAssignment] = useState(null);
+  const { assignments, loading, error, refetch } = useStudentAssignments();
 
-  const filteredAssignments = mockAssignments.filter(
+  if (loading) {
+    return <LoadingState />;
+  }
+
+  if (error) {
+    return (
+      <div className="text-center py-12">
+        <AlertCircle className="h-12 w-12 text-destructive mx-auto mb-4" />
+        <p className="text-destructive mb-4">Error loading assignments: {error}</p>
+        <Button onClick={refetch}>Try Again</Button>
+      </div>
+    );
+  }
+
+  const assignmentsList = assignments?.data || [];
+  const filteredAssignments = assignmentsList.filter(
     (a) =>
       a.title.toLowerCase().includes(searchQuery.toLowerCase()) ||
-      a.subjectName.toLowerCase().includes(searchQuery.toLowerCase())
+      a.className?.toLowerCase().includes(searchQuery.toLowerCase())
   );
 
   const pendingAssignments = filteredAssignments.filter((a) => a.status === "active");

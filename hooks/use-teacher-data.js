@@ -9,6 +9,10 @@ export function useTeacherClasses() {
   const { data, loading, error, refetch } = useFetch('/api/teacher/classes');
   return { classes: data, loading, error, refetch };
 }
+export function useTeacherTimetable() {
+  const { data, loading, error, refetch } = useFetch('/api/teacher/timetable');
+  return { timetable: data, loading, error, refetch };
+}
 
 export function useTeacherStudents() {
   const { data, loading, error, refetch } = useFetch('/api/teacher/students');

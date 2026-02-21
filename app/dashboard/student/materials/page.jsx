@@ -6,7 +6,7 @@ import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Input } from "@/components/ui/input";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { mockStudyMaterials, mockSubjects } from "@/lib/mock-data";
+import { useStudentMaterials } from "@/hooks/use-student-data";
 import { 
   FileText, 
   Video, 
@@ -15,17 +15,46 @@ import {
   Search, 
   FolderOpen,
   Eye,
-  Clock
+  Clock,
+  Loader2,
+  AlertCircle,
 } from "lucide-react";
 import { toast } from "sonner";
+
+function LoadingState() {
+  return (
+    <div className="flex items-center justify-center min-h-96">
+      <div className="text-center">
+        <Loader2 className="h-8 w-8 animate-spin mx-auto mb-4 text-primary" />
+        <p className="text-muted-foreground">Loading your materials...</p>
+      </div>
+    </div>
+  );
+}
 
 export default function StudentMaterials() {
   const [searchQuery, setSearchQuery] = useState("");
   const [selectedSubject, setSelectedSubject] = useState("all");
+  const { materials, loading, error, refetch } = useStudentMaterials();
 
-  const filteredMaterials = mockStudyMaterials.filter((material) => {
+  if (loading) {
+    return <LoadingState />;
+  }
+
+  if (error) {
+    return (
+      <div className="text-center py-12">
+        <AlertCircle className="h-12 w-12 text-destructive mx-auto mb-4" />
+        <p className="text-destructive mb-4">Error loading materials: {error}</p>
+        <Button onClick={refetch}>Try Again</Button>
+      </div>
+    );
+  }
+
+  const materialsList = materials?.data || [];
+  const filteredMaterials = materialsList.filter((material) => {
     const matchesSearch = material.title.toLowerCase().includes(searchQuery.toLowerCase()) ||
-      material.description.toLowerCase().includes(searchQuery.toLowerCase());
+      material.description?.toLowerCase().includes(searchQuery.toLowerCase());
     const matchesSubject = selectedSubject === "all" || material.subjectId === selectedSubject;
     return matchesSearch && matchesSubject;
   });

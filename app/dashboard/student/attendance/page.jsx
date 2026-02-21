@@ -4,17 +4,45 @@ import { useState } from "react";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Progress } from "@/components/ui/progress";
-import { mockAttendance } from "@/lib/mock-data";
-import { Calendar, CheckCircle2, XCircle, Clock, TrendingUp } from "lucide-react";
+import { Button } from "@/components/ui/button";
+import { useStudentAttendance } from "@/hooks/use-student-data";
+import { Calendar, CheckCircle2, XCircle, Clock, TrendingUp, Loader2, AlertCircle } from "lucide-react";
+
+function LoadingState() {
+  return (
+    <div className="flex items-center justify-center min-h-96">
+      <div className="text-center">
+        <Loader2 className="h-8 w-8 animate-spin mx-auto mb-4 text-primary" />
+        <p className="text-muted-foreground">Loading attendance records...</p>
+      </div>
+    </div>
+  );
+}
 
 export default function StudentAttendance() {
   const [selectedMonth, setSelectedMonth] = useState(new Date().getMonth());
+  const { attendance, loading, error, refetch } = useStudentAttendance();
 
+  if (loading) {
+    return <LoadingState />;
+  }
+
+  if (error) {
+    return (
+      <div className="text-center py-12">
+        <AlertCircle className="h-12 w-12 text-destructive mx-auto mb-4" />
+        <p className="text-destructive mb-4">Error loading attendance: {error}</p>
+        <Button onClick={refetch}>Try Again</Button>
+      </div>
+    );
+  }
+
+  const attendanceRecords = attendance?.data || [];
   // Calculate attendance stats
-  const totalDays = mockAttendance.length;
-  const presentDays = mockAttendance.filter((a) => a.status === "present").length;
-  const absentDays = mockAttendance.filter((a) => a.status === "absent").length;
-  const lateDays = mockAttendance.filter((a) => a.status === "late").length;
+  const totalDays = attendanceRecords.length;
+  const presentDays = attendanceRecords.filter((a) => a.status === "present").length;
+  const absentDays = attendanceRecords.filter((a) => a.status === "absent").length;
+  const lateDays = attendanceRecords.filter((a) => a.status === "late").length;
   const attendanceRate = totalDays > 0 ? Math.round((presentDays / totalDays) * 100) : 0;
 
   const getStatusColor = (status) => {

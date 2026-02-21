@@ -1,11 +1,13 @@
 "use client";
 
+import { useState } from "react";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Switch } from "@/components/ui/switch";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { useAdminSettings } from "@/hooks/use-admin-data";
 import {
   Settings,
   Bell,
@@ -14,9 +16,40 @@ import {
   Mail,
   Globe,
   Save,
+  Loader2,
+  AlertCircle,
 } from "lucide-react";
+import { toast } from "sonner";
+
+function LoadingState() {
+  return (
+    <div className="flex items-center justify-center min-h-96">
+      <div className="text-center">
+        <Loader2 className="h-8 w-8 animate-spin mx-auto mb-4 text-primary" />
+        <p className="text-muted-foreground">Loading settings...</p>
+      </div>
+    </div>
+  );
+}
 
 export default function AdminSettingsPage() {
+  const { settings, loading, error, refetch, updateSettings } = useAdminSettings();
+  const [formData, setFormData] = useState(settings?.data || {});
+
+  if (loading) {
+    return <LoadingState />;
+  }
+
+  if (error) {
+    return (
+      <div className="text-center py-12">
+        <AlertCircle className="h-12 w-12 text-destructive mx-auto mb-4" />
+        <p className="text-destructive mb-4">Error loading settings: {error}</p>
+        <Button onClick={refetch}>Try Again</Button>
+      </div>
+    );
+  }
+
   return (
     <div className="space-y-6">
       <div>
