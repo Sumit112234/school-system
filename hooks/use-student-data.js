@@ -39,6 +39,10 @@ export function useStudentMessages() {
   const { data, loading, error, refetch } = useFetch('/api/student/messages');
   return { messages: data, loading, error, refetch };
 }
+export function useStudentClasses() {
+  const { data, loading, error, refetch } = useFetch('/api/student/classes');
+  return { classes: data, loading, error, refetch };
+}
 
 export async function submitAssignment(assignmentId, submissionData) {
   const response = await fetch(`/api/student/assignments/${assignmentId}/submit`, {

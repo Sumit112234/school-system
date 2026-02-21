@@ -68,6 +68,18 @@ export async function deleteUser(userId) {
   });
   return response.json();
 }
+export async function useHelperTickets() {
+  const response = await fetch(`/api/admin/tickets`, {
+    method: 'GET',
+  });
+  return response.json();
+}
+export async function useHelperUsers() {
+  const response = await fetch(`/api/admin/users?role=helper`, {
+    method: 'GET',
+  });
+  return response.json();
+}
 
 export async function createClass(classData) {
   const response = await fetch('/api/admin/classes', {
