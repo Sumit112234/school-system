@@ -44,19 +44,19 @@ export async function POST(request) {
     await connectDB();
 
     // Check settings for registration permissions
-    const settings = await Settings.findOne({ key: "main" });
+    // const settings = await Settings.findOne({ key: "main" });
     
-    if (role === "student" && settings && !settings.allowStudentRegistration) {
-      return errorResponse("Student registration is currently disabled", 403);
-    }
+    // if (role === "student" && settings && !settings.allowStudentRegistration) {
+    //   return errorResponse("Student registration is currently disabled", 403);
+    // }
     
-    if (role === "teacher" && settings && !settings.allowTeacherRegistration) {
-      return errorResponse("Teacher registration is currently disabled", 403);
-    }
+    // if (role === "teacher" && settings && !settings.allowTeacherRegistration) {
+    //   return errorResponse("Teacher registration is currently disabled", 403);
+    // }
 
-    if (role === "admin" || role === "helper") {
-      return errorResponse("Admin and helper accounts can only be created by administrators", 403);
-    }
+    // if (role === "admin" || role === "helper") {
+    //   return errorResponse("Admin and helper accounts can only be created by administrators", 403);
+    // }
 
     // Check if user already exists
     const existingUser = await User.findOne({ email: email.toLowerCase() });
