@@ -2,9 +2,115 @@ import connectDB from "@/lib/mongodb";
 import Class from "@/lib/models/Class";
 import Student from "@/lib/models/Student";
 import { requireAdmin } from "@/lib/auth";
+import Teacher from "@/lib/models/Teacher";
+import Subject from "@/lib/models/Subject";
 import { successResponse, errorResponse, handleMongoError } from "@/lib/api-utils";
 
+
+
+
+export async function PUT(request, { params }) {
+  try {
+    const { error, status } = await requireAdmin();
+    if (error) return errorResponse(error, status);
+
+    const { id } = await params;
+    const body = await request.json();
+
+    await connectDB();
+
+    // 1️⃣ Get old class data
+    const oldClass = await Class.findById(id);
+    if (!oldClass) {
+      return errorResponse("Class not found", 404);
+    }
+
+    const oldTeacherId = oldClass.classTeacher?.toString();
+    const newTeacherId = body.classTeacher;
+
+    // 2️⃣ Update class
+    const classData = await Class.findByIdAndUpdate(
+      id,
+      { $set: body },
+      { new: true, runValidators: true }
+    )
+      .populate({
+        path: "classTeacher",
+        populate: { path: "user", select: "name email" }
+      })
+      .populate("subjects.subject", "name code");
+
+    // 3️⃣ If class teacher changed → update teachers
+    if (newTeacherId && newTeacherId !== oldTeacherId) {
+
+      // 🔴 Remove old class teacher
+      if (oldTeacherId) {
+        await Teacher.findByIdAndUpdate(oldTeacherId, {
+          $pull: { classes: id },
+          $set: {
+            isClassTeacher: false,
+            classTeacherOf: null,
+          },
+        });
+      }
+
+      // 🟢 Assign new class teacher
+      await Teacher.findByIdAndUpdate(newTeacherId, {
+        $addToSet: { classes: id },
+        $set: {
+          isClassTeacher: true,
+          classTeacherOf: id,
+        },
+      });
+    }
+
+    return successResponse(classData, "Class updated successfully");
+
+  } catch (error) {
+    return handleMongoError(error);
+  }
+}
+
+
+// export async function PUT(request, { params }) {
+//   try {
+//     const { error, status } = await requireAdmin();
+//     if (error) return errorResponse(error, status);
+
+//     const { id } = await params;
+//     const body = await request.json();
+
+//     await connectDB();
+
+//     const classData = await Class.findByIdAndUpdate(
+//       id,
+//       { $set: body },
+//       { new: true, runValidators: true }
+//     )
+//       .populate({
+//         path: "classTeacher",
+//         populate: { path: "user", select: "name email" }
+//       })
+//       .populate("subjects.subject", "name code");
+
+
+//       // update teacher also
+
+     
+//     if (!classData) {
+//       return errorResponse("Class not found", 404);
+//     }
+
+//     return successResponse(classData, "Class updated successfully");
+
+//   } catch (error) {
+//     return handleMongoError(error);
+//   }
+// }
+
 // GET single class with students
+
+
 export async function GET(request, { params }) {
   try {
     const { error, status } = await requireAdmin();
@@ -41,37 +147,6 @@ export async function GET(request, { params }) {
 }
 
 // PUT update class
-export async function PUT(request, { params }) {
-  try {
-    const { error, status } = await requireAdmin();
-    if (error) return errorResponse(error, status);
-
-    const { id } = await params;
-    const body = await request.json();
-
-    await connectDB();
-
-    const classData = await Class.findByIdAndUpdate(
-      id,
-      { $set: body },
-      { new: true, runValidators: true }
-    )
-      .populate({
-        path: "classTeacher",
-        populate: { path: "user", select: "name email" }
-      })
-      .populate("subjects.subject", "name code");
-
-    if (!classData) {
-      return errorResponse("Class not found", 404);
-    }
-
-    return successResponse(classData, "Class updated successfully");
-
-  } catch (error) {
-    return handleMongoError(error);
-  }
-}
 
 // DELETE class
 export async function DELETE(request, { params }) {

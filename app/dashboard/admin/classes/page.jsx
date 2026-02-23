@@ -80,13 +80,17 @@ function SubjectAssignmentDialog({ cls, open, onOpenChange, onSaved }) {
       try {
         const [subjectsRes, teachersRes] = await Promise.all([
           fetch("/api/admin/subjects?limit=1000"),
-          fetch("/api/admin/users?role=teacher&limit=1000"),
+          fetch("/api/admin/teachers?limit=1000"),
         ]);
+        
+
         
         const [subjectsData, teachersData] = await Promise.all([
           subjectsRes.json(),
           teachersRes.json(),
         ]);
+
+        console.log("Fetched subjects data:", teachersData);
 
         if (!subjectsRes.ok) throw new Error("Failed to fetch subjects");
         if (!teachersRes.ok) throw new Error("Failed to fetch teachers");
@@ -224,7 +228,7 @@ function SubjectAssignmentDialog({ cls, open, onOpenChange, onSaved }) {
                           <SelectContent>
                             <SelectItem value="none">No teacher</SelectItem>
                             {teachers.map((t) => (
-                              <SelectItem key={t.id ?? t._id} value={t.id ?? t._id}>
+                              <SelectItem key={t.id ?? t._id} value={t?.teacherData?._id}>
                                 {t.name}
                               </SelectItem>
                             ))}
@@ -393,7 +397,7 @@ function ClassDialog({ cls, open, onOpenChange, onSaved }) {
 
       console.log(payload, method, url);
 
-      return ;
+      // return ;
       const res = await fetch(url, {
         method,
         headers: { "Content-Type": "application/json" },
@@ -502,7 +506,7 @@ function ClassDialog({ cls, open, onOpenChange, onSaved }) {
               <SelectContent>
                 <SelectItem value="none">No class teacher</SelectItem>
                 {teachers.map((t) => {
-                  const id = t._id ?? t.id;
+                  const id = t?.teacherData?._id ?? t?.teacherData?.id;
                   const name = t.name ?? "Unknown";
                   return (
                     <SelectItem key={id} value={id}>
