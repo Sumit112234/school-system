@@ -1,14 +1,18 @@
 import connectDB from "@/lib/mongodb";
-import Teacher from "@/lib/models/Teacher";
 import Assignment from "@/lib/models/Assignment";
-import { requireTeacher } from "@/lib/auth";
+import Teacher from "@/lib/models/Teacher";
+import { requireAuth } from "@/lib/auth";
 import { successResponse, errorResponse, handleMongoError } from "@/lib/api-utils";
 
-// GET single assignment with submissions
+// GET single assignment
 export async function GET(request, { params }) {
   try {
-    const { user, error, status } = await requireTeacher();
+    const { user, error, status } = await requireAuth();
     if (error) return errorResponse(error, status);
+
+    if (user.role !== "teacher") {
+      return errorResponse("Access denied. Teachers only.", 403);
+    }
 
     const { id } = await params;
     await connectDB();
@@ -23,7 +27,7 @@ export async function GET(request, { params }) {
       .populate("subject", "name code")
       .populate({
         path: "submissions.student",
-        populate: { path: "user", select: "name email" }
+        populate: { path: "user", select: "name email avatar" }
       });
 
     if (!assignment) {
@@ -40,8 +44,12 @@ export async function GET(request, { params }) {
 // PUT update assignment
 export async function PUT(request, { params }) {
   try {
-    const { user, error, status } = await requireTeacher();
+    const { user, error, status } = await requireAuth();
     if (error) return errorResponse(error, status);
+
+    if (user.role !== "teacher") {
+      return errorResponse("Access denied. Teachers only.", 403);
+    }
 
     const { id } = await params;
     const body = await request.json();
@@ -75,8 +83,12 @@ export async function PUT(request, { params }) {
 // DELETE assignment
 export async function DELETE(request, { params }) {
   try {
-    const { user, error, status } = await requireTeacher();
+    const { user, error, status } = await requireAuth();
     if (error) return errorResponse(error, status);
+
+    if (user.role !== "teacher") {
+      return errorResponse("Access denied. Teachers only.", 403);
+    }
 
     const { id } = await params;
     await connectDB();
@@ -92,6 +104,61 @@ export async function DELETE(request, { params }) {
     }
 
     return successResponse(null, "Assignment deleted successfully");
+
+  } catch (error) {
+    return handleMongoError(error);
+  }
+}
+
+// POST grade submission
+export async function POST(request, { params }) {
+  try {
+    const { user, error, status } = await requireAuth();
+    if (error) return errorResponse(error, status);
+
+    if (user.role !== "teacher") {
+      return errorResponse("Access denied. Teachers only.", 403);
+    }
+
+    const { id } = await params;
+    const body = await request.json();
+    const { submissionId, grade, feedback, submissionStatus } = body;
+
+    if (grade === undefined || grade === null) {
+      return errorResponse("Grade is required", 400);
+    }
+
+    await connectDB();
+
+    const teacher = await Teacher.findOne({ user: user._id });
+    if (!teacher) {
+      return errorResponse("Teacher profile not found", 404);
+    }
+
+    const assignment = await Assignment.findOne({ _id: id, teacher: teacher._id });
+    if (!assignment) {
+      return errorResponse("Assignment not found", 404);
+    }
+
+    const submission = assignment.submissions.id(submissionId);
+    if (!submission) {
+      return errorResponse("Submission not found", 404);
+    }
+
+    submission.grade = grade;
+    submission.feedback = feedback || null;
+    submission.status = submissionStatus || "graded";
+    submission.gradedAt = new Date();
+    submission.gradedBy = teacher._id;
+
+    await assignment.save();
+
+    await assignment.populate({
+      path: "submissions.student",
+      populate: { path: "user", select: "name email" }
+    });
+
+    return successResponse(assignment, "Submission graded successfully");
 
   } catch (error) {
     return handleMongoError(error);

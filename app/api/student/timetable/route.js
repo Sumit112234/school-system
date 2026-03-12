@@ -1,31 +1,40 @@
 import connectDB from "@/lib/mongodb";
 import Student from "@/lib/models/Student";
 import Timetable from "@/lib/models/Timetable";
-import Settings from "@/lib/models/Settings";
-import { requireStudent } from "@/lib/auth";
+import { requireAuth } from "@/lib/auth";
 import { successResponse, errorResponse, handleMongoError } from "@/lib/api-utils";
 
+// GET student's timetable
 export async function GET(request) {
   try {
-    const { user, error, status } = await requireStudent();
+    const { user, error, status } = await requireAuth();
     if (error) return errorResponse(error, status);
+
+    if (user.role !== "student") {
+      return errorResponse("Access denied. Students only.", 403);
+    }
 
     await connectDB();
 
     const student = await Student.findOne({ user: user._id });
-    if (!student) {
-      return errorResponse("Student profile not found", 404);
+    if (!student || !student.class) {
+      return errorResponse("Student class not found", 404);
     }
 
-    // Get current academic year from settings
-    const settings = await Settings.findOne({ key: "main" });
-    const academicYear = settings?.currentAcademicYear || "2025-2026";
+    const { searchParams } = new URL(request.url);
+    const day = searchParams.get("day") || "";
 
-    const timetable = await Timetable.find({
+    let query = {
       class: student.class,
-      academicYear,
       isActive: true,
-    })
+    };
+
+    if (day) {
+      query.day = day;
+    }
+
+    const timetables = await Timetable.find(query)
+      .populate("class", "name section academicYear")
       .populate("periods.subject", "name code")
       .populate({
         path: "periods.teacher",
@@ -33,21 +42,41 @@ export async function GET(request) {
       })
       .sort({ day: 1 });
 
-    // Organize by day
-    const days = ["monday", "tuesday", "wednesday", "thursday", "friday", "saturday"];
-    const organizedTimetable = {};
-    
-    days.forEach(day => {
-      const daySchedule = timetable.find(t => t.day === day);
-      organizedTimetable[day] = daySchedule ? daySchedule.periods : [];
-    });
+    // Get current day for highlighting
+    const currentDay = new Date().toLocaleDateString('en-US', { weekday: 'long' }).toLowerCase();
+    const currentTime = new Date().toTimeString().slice(0, 5); // HH:MM format
+
+    // Find current/next period
+    let currentPeriod = null;
+    let nextPeriod = null;
+
+    const todayTimetable = timetables.find(t => t.day === currentDay);
+    if (todayTimetable) {
+      for (let i = 0; i < todayTimetable.periods.length; i++) {
+        const period = todayTimetable.periods[i];
+        if (currentTime >= period.startTime && currentTime <= period.endTime) {
+          currentPeriod = { ...period.toObject(), day: currentDay };
+          if (i + 1 < todayTimetable.periods.length) {
+            nextPeriod = { ...todayTimetable.periods[i + 1].toObject(), day: currentDay };
+          }
+          break;
+        } else if (currentTime < period.startTime) {
+          nextPeriod = { ...period.toObject(), day: currentDay };
+          break;
+        }
+      }
+    }
 
     return successResponse({
-      timetable: organizedTimetable,
-      academicYear,
+      timetables,
+      currentDay,
+      currentTime,
+      currentPeriod,
+      nextPeriod,
     });
 
   } catch (error) {
+    console.error("Get student timetable error:", error);
     return handleMongoError(error);
   }
 }

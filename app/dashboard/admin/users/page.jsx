@@ -838,6 +838,8 @@ export default function AdminUsersPage() {
 
       const list  = data?.data?.data ?? data?.data ?? [];
       const total = data?.data?.total ?? list.length;
+
+      console.log("Fetched users:", { list, total, data });
       setUsers(list);
       setTotalUsers(total);
       setTotalPages(Math.ceil(total / LIMIT));
@@ -863,7 +865,7 @@ export default function AdminUsersPage() {
       const adminCnt = adminData?.data?.pagination?.total  ?? 0;
 
       
-    //   console.log("Stats:", [allData, activeData, adminData]);
+      // console.log("Stats:", [allData, activeData, adminData]);
       setStats({ total, active, inactive: total - active, admins: adminCnt });
     } catch {
       // stats are non-critical

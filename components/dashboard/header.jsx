@@ -15,15 +15,31 @@ import {
 import { Bell, Search, Menu, Moon, Sun, User, Settings, LogOut } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { mockNotifications } from "@/lib/mock-data";
+import { useEffect } from "react";
 
 export function DashboardHeader({ onToggleSidebar, collapsed }) {
   const { user, logout } = useAuth();
   const [isDark, setIsDark] = useState(false);
   const notifications = mockNotifications.filter((n) => !n.read);
 
+  useEffect(()=>{
+    let theme = localStorage.getItem("theme");
+    if(theme === "dark"){
+      setIsDark(true);
+      document.documentElement.classList.add("dark");
+    }
+    // console.log("theme :", document.documentElement.classList.contains("dark"));
+  },[])
+
   const toggleTheme = () => {
     setIsDark(!isDark);
     document.documentElement.classList.toggle("dark");
+    if(document.documentElement.classList.contains("dark")){
+      localStorage.setItem("theme", "dark");
+    }
+    else{   
+        localStorage.setItem("theme", "light");
+    }
   };
 
   const getRoleColor = () => {

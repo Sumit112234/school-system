@@ -61,7 +61,7 @@ const adminNavItems = [
   { title: "Timetable", href: "/dashboard/admin/timetable", icon: Calendar },
   { title: "Attendance", href: "/dashboard/admin/attendance", icon: ClipboardList },
   { title: "Fee Management", href: "/dashboard/admin/fees", icon: CreditCard },
-  { title: "Announcements", href: "/dashboard/admin/announcements", icon: Bell },
+  { title: "Announcements", href: "/dashboard/admin/notices", icon: Bell },
   { title: "Leave Requests", href: "/dashboard/admin/leaves", icon: Clock },
   { title: "Reports", href: "/dashboard/admin/reports", icon: BarChart3 },
   { title: "Settings", href: "/dashboard/admin/settings", icon: Settings },

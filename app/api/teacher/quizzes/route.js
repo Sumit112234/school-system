@@ -36,7 +36,6 @@ export async function GET(request) {
       Quiz.find(query)
         .populate("class", "name section")
         .populate("subject", "name code")
-        .select("-questions.correctAnswer") // Don't expose answers in list
         .sort({ createdAt: -1 })
         .skip(skip)
         .limit(limit),

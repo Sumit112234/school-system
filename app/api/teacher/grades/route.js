@@ -1,8 +1,8 @@
 import connectDB from "@/lib/mongodb";
-import Teacher from "@/lib/models/Teacher";
 import Grade from "@/lib/models/Grade";
-import Settings from "@/lib/models/Settings";
-import { requireTeacher } from "@/lib/auth";
+import Teacher from "@/lib/models/Teacher";
+import Student from "@/lib/models/Student";
+import { requireAuth } from "@/lib/auth";
 import { 
   successResponse, 
   errorResponse,
@@ -11,11 +11,15 @@ import {
   handleMongoError 
 } from "@/lib/api-utils";
 
-// GET grades (teacher can see grades for their classes)
+// GET grades (teacher's classes)
 export async function GET(request) {
   try {
-    const { user, error, status } = await requireTeacher();
+    const { user, error, status } = await requireAuth();
     if (error) return errorResponse(error, status);
+
+    if (user.role !== "teacher") {
+      return errorResponse("Access denied. Teachers only.", 403);
+    }
 
     await connectDB();
 
@@ -31,7 +35,7 @@ export async function GET(request) {
       return errorResponse("Teacher profile not found", 404);
     }
 
-    let query = { class: { $in: teacher.classes } };
+    let query = { teacher: teacher._id };
     if (classId) query.class = classId;
     if (subjectId) query.subject = subjectId;
     if (term) query.term = term;
@@ -39,7 +43,10 @@ export async function GET(request) {
 
     const [grades, total] = await Promise.all([
       Grade.find(query)
-        .populate({ path: "student", populate: { path: "user", select: "name" } })
+        .populate({
+          path: "student",
+          populate: { path: "user", select: "name email avatar" }
+        })
         .populate("class", "name section")
         .populate("subject", "name code")
         .sort({ createdAt: -1 })
@@ -51,21 +58,26 @@ export async function GET(request) {
     return successResponse(createPaginationResponse(grades, total, page, limit));
 
   } catch (error) {
+    console.error("Get grades error:", error);
     return handleMongoError(error);
   }
 }
 
-// POST add grades
+// POST create/update grades (bulk)
 export async function POST(request) {
   try {
-    const { user, error, status } = await requireTeacher();
+    const { user, error, status } = await requireAuth();
     if (error) return errorResponse(error, status);
 
-    const body = await request.json();
-    const { studentId, classId, subjectId, term, examType, marksObtained, totalMarks, remarks } = body;
+    if (user.role !== "teacher") {
+      return errorResponse("Access denied. Teachers only.", 403);
+    }
 
-    if (!studentId || !classId || !subjectId || !term || !examType || marksObtained === undefined || !totalMarks) {
-      return errorResponse("All fields are required", 400);
+    const body = await request.json();
+    const { grades: gradesData } = body;
+
+    if (!Array.isArray(gradesData) || gradesData.length === 0) {
+      return errorResponse("Grades array is required", 400);
     }
 
     await connectDB();
@@ -75,57 +87,77 @@ export async function POST(request) {
       return errorResponse("Teacher profile not found", 404);
     }
 
-    // Verify teacher has access to this class
-    if (!teacher.classes.map(c => c.toString()).includes(classId)) {
-      return errorResponse("Access denied to this class", 403);
+    const results = [];
+    const errors = [];
+
+    for (const gradeData of gradesData) {
+      try {
+        const {
+          studentId, classId, subjectId, academicYear, term, examType,
+          marksObtained, totalMarks, remarks
+        } = gradeData;
+
+        if (!studentId || !classId || !subjectId || !academicYear || !term || !examType) {
+          errors.push({ studentId, error: "Missing required fields" });
+          continue;
+        }
+
+        if (marksObtained === undefined || totalMarks === undefined) {
+          errors.push({ studentId, error: "Marks are required" });
+          continue;
+        }
+
+        // Check if grade already exists
+        const existingGrade = await Grade.findOne({
+          student: studentId,
+          class: classId,
+          subject: subjectId,
+          academicYear,
+          term,
+          examType,
+        });
+
+        if (existingGrade) {
+          // Update existing
+          existingGrade.marksObtained = marksObtained;
+          existingGrade.totalMarks = totalMarks;
+          existingGrade.remarks = remarks || null;
+          existingGrade.teacher = teacher._id;
+          await existingGrade.save();
+          results.push(existingGrade);
+        } else {
+          // Create new
+          const newGrade = await Grade.create({
+            student: studentId,
+            class: classId,
+            subject: subjectId,
+            academicYear,
+            term,
+            examType,
+            marksObtained,
+            totalMarks,
+            remarks: remarks || null,
+            teacher: teacher._id,
+          });
+          results.push(newGrade);
+        }
+      } catch (err) {
+        errors.push({ studentId: gradeData.studentId, error: err.message });
+      }
     }
 
-    // Get current academic year from settings
-    const settings = await Settings.findOne({ key: "main" });
-    const academicYear = settings?.currentAcademicYear || "2025-2026";
-
-    // Check if grade already exists
-    let grade = await Grade.findOne({
-      student: studentId,
-      class: classId,
-      subject: subjectId,
-      term,
-      examType,
-      academicYear,
-    });
-
-    if (grade) {
-      // Update existing grade
-      grade.marksObtained = marksObtained;
-      grade.totalMarks = totalMarks;
-      grade.remarks = remarks;
-      grade.teacher = teacher._id;
-      await grade.save();
-    } else {
-      // Create new grade
-      grade = await Grade.create({
-        student: studentId,
-        class: classId,
-        subject: subjectId,
-        academicYear,
-        term,
-        examType,
-        marksObtained,
-        totalMarks,
-        remarks,
-        teacher: teacher._id,
-      });
-    }
-
-    await grade.populate([
-      { path: "student", populate: { path: "user", select: "name" } },
-      { path: "class", select: "name section" },
-      { path: "subject", select: "name code" }
-    ]);
-
-    return successResponse(grade, "Grade saved successfully");
+    return successResponse(
+      { 
+        success: results.length,
+        failed: errors.length,
+        results,
+        errors 
+      },
+      `Successfully processed ${results.length} grade(s)`
+    );
 
   } catch (error) {
+    console.error("Create grades error:", error);
     return handleMongoError(error);
   }
 }

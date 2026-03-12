@@ -39,13 +39,14 @@ export async function GET(request, { params }) {
 
 // PUT update quiz
 export async function PUT(request, { params }) {
-  try {
+  // try {
     const { user, error, status } = await requireTeacher();
     if (error) return errorResponse(error, status);
 
     const { id } = await params;
     const body = await request.json();
 
+    console.log({id, body})
     await connectDB();
 
     const teacher = await Teacher.findOne({ user: user._id });
@@ -73,9 +74,9 @@ export async function PUT(request, { params }) {
 
     return successResponse(quiz, "Quiz updated successfully");
 
-  } catch (error) {
-    return handleMongoError(error);
-  }
+  // } catch (error) {
+  //   return handleMongoError(error);
+  // }
 }
 
 // DELETE quiz

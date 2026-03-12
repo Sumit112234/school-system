@@ -9,12 +9,20 @@ import {
   buildSearchQuery,
   handleMongoError 
 } from "@/lib/api-utils";
+import { requireAuth } from "@/lib/auth";
 
 // GET all subjects
 export async function GET(request) {
   try {
-    const { error, status } = await requireAdmin();
+    // const { error, status } = await requireAdmin();
+    // if (error) return errorResponse(error, status);
+
+         const { user, error, status } = await requireAuth();
     if (error) return errorResponse(error, status);
+
+    if (user.role !== "teacher" && user.role !== "admin") {
+      return errorResponse("Access denied. Teachers and admins only.", 403);
+    }
 
     await connectDB();
 

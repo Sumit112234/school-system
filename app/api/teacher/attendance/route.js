@@ -1,21 +1,21 @@
 import connectDB from "@/lib/mongodb";
-import Teacher from "@/lib/models/Teacher";
 import Attendance from "@/lib/models/Attendance";
+import Teacher from "@/lib/models/Teacher";
+import Class from "@/lib/models/Class";
 import Student from "@/lib/models/Student";
-import { requireTeacher } from "@/lib/auth";
-import { 
-  successResponse, 
-  errorResponse,
-  getStartOfDay,
-  getEndOfDay,
-  handleMongoError 
-} from "@/lib/api-utils";
+import { requireAuth } from "@/lib/auth";
+import { successResponse, errorResponse, handleMongoError } from "@/lib/api-utils";
 
 // GET attendance records
 export async function GET(request) {
   try {
-    const { user, error, status } = await requireTeacher();
+    const { user, error, status } = await requireAuth();
     if (error) return errorResponse(error, status);
+
+    // console.log({user})
+    if (user.role !== "teacher") {
+      return errorResponse("Access denied. Teachers only.", 403);
+    }
 
     await connectDB();
 
@@ -24,112 +24,152 @@ export async function GET(request) {
     const date = searchParams.get("date");
     const subjectId = searchParams.get("subjectId");
 
-    const teacher = await Teacher.findOne({ user: user._id });
-    if (!teacher) {
-      return errorResponse("Teacher profile not found", 404);
+    if (!classId || !date) {
+      return errorResponse("Class ID and date are required", 400);
     }
 
-    let query = { teacher: teacher._id };
-
-    if (classId) {
-      if (!teacher.classes.map(c => c.toString()).includes(classId)) {
-        return errorResponse("Access denied to this class", 403);
-      }
-      query.class = classId;
-    } else {
-      query.class = { $in: teacher.classes };
-    }
-
-    if (date) {
-      const targetDate = new Date(date);
-      query.date = {
-        $gte: getStartOfDay(targetDate),
-        $lte: getEndOfDay(targetDate),
-      };
-    }
-
-    if (subjectId) {
-      query.subject = subjectId;
-    }
-
-    const attendance = await Attendance.find(query)
-      .populate("class", "name section")
-      .populate("subject", "name code")
-      .populate({
-        path: "records.student",
-        populate: { path: "user", select: "name" }
-      })
-      .sort({ date: -1 });
-
-    return successResponse(attendance);
-
-  } catch (error) {
-    return handleMongoError(error);
-  }
-}
-
-// POST create/update attendance
-export async function POST(request) {
-  try {
-    const { user, error, status } = await requireTeacher();
-    if (error) return errorResponse(error, status);
-
-    const body = await request.json();
-    const { classId, subjectId, date, period, records, type } = body;
-
-    if (!classId || !date || !records || !Array.isArray(records)) {
-      return errorResponse("Class ID, date, and records are required", 400);
-    }
-
-    await connectDB();
-
-    const teacher = await Teacher.findOne({ user: user._id });
-    if (!teacher) {
+    // Get teacher profile
+    const teacherProfile = await Teacher.findOne({ user: user._id });
+    if (!teacherProfile) {
       return errorResponse("Teacher profile not found", 404);
     }
 
     // Verify teacher has access to this class
-    if (!teacher.classes.map(c => c.toString()).includes(classId)) {
+    const classData = await Class.findOne({
+      _id: classId,
+      $or: [
+        { classTeacher: teacherProfile._id },
+        { "subjects.teacher": teacherProfile._id }
+      ]
+    });
+    // console.log({classData})
+
+    if (!classData) {
       return errorResponse("Access denied to this class", 403);
     }
 
-    const attendanceDate = getStartOfDay(new Date(date));
-
-    // Check if attendance already exists for this class/date/subject
-    let attendance = await Attendance.findOne({
+    // Build query
+    const query = {
       class: classId,
-      date: attendanceDate,
-      subject: subjectId || null,
-      period: period || null,
-    });
+      date: new Date(date),
+    };
 
-    if (attendance) {
-      // Update existing
-      attendance.records = records;
-      attendance.teacher = teacher._id;
-      await attendance.save();
+    // console.log({query})
+    if (subjectId && subjectId !== "general") {
+      query.subject = subjectId;
     } else {
-      // Create new
-      attendance = await Attendance.create({
-        class: classId,
-        subject: subjectId || null,
-        date: attendanceDate,
-        period: period || null,
-        teacher: teacher._id,
-        records,
-        type: type || "daily",
-      });
+      query.subject = null; // General attendance
     }
 
-    await attendance.populate([
-      { path: "class", select: "name section" },
-      { path: "subject", select: "name code" },
-      { path: "records.student", populate: { path: "user", select: "name" } }
-    ]);
+    // Get attendance records
+    const records = await Attendance.find(query)
+      .populate("student", "studentId rollNumber")
+      .populate({
+        path: "student",
+        populate: { path: "user", select: "name avatar" }
+      })
+      .sort({ "student.rollNumber": 1 });
 
-    return successResponse(attendance, "Attendance saved successfully");
+    return successResponse({
+      records: records.map(r => ({
+        _id: r._id,
+        student: {
+          _id: r.student._id,
+          studentId: r.student.studentId,
+          rollNumber: r.student.rollNumber,
+          name: r.student.user?.name,
+          avatar: r.student.user?.avatar,
+        },
+        status: r.status,
+        remarks: r.remarks,
+      })),
+    });
 
   } catch (error) {
+    console.error("Get attendance error:", error);
+    return handleMongoError(error);
+  }
+}
+
+// POST - Submit attendance
+export async function POST(request) {
+  try {
+    const { user, error, status } = await requireAuth();
+    if (error) return errorResponse(error, status);
+
+    if (user.role !== "teacher") {
+      return errorResponse("Access denied. Teachers only.", 403);
+    }
+
+    const body = await request.json();
+    const { classId, date, subjectId, attendanceRecords } = body;
+
+    if (!classId || !date || !Array.isArray(attendanceRecords)) {
+      return errorResponse("Class ID, date, and attendance records are required", 400);
+    }
+
+    await connectDB();
+
+    // Get teacher profile
+    const teacherProfile = await Teacher.findOne({ user: user._id });
+    if (!teacherProfile) {
+      return errorResponse("Teacher profile not found", 404);
+    }
+
+    // Verify teacher has access to this class
+    const classData = await Class.findOne({
+      _id: classId,
+      $or: [
+        { classTeacher: teacherProfile._id },
+        { "subjects.teacher": teacherProfile._id }
+      ]
+    });
+
+    if (!classData) {
+      return errorResponse("Access denied to this class", 403);
+    }
+
+    // If subject is specified, verify teacher teaches it
+    if (subjectId && subjectId !== "general") {
+      const teachesSubject = classData.subjects.some(
+        s => s.subject.toString() === subjectId && s.teacher?.toString() === teacherProfile._id.toString()
+      );
+      
+      if (!teachesSubject) {
+        return errorResponse("You don't teach this subject in this class", 403);
+      }
+    }
+
+    const attendanceDate = new Date(date);
+    attendanceDate.setHours(0, 0, 0, 0);
+
+    // Delete existing attendance for this class, date, and subject
+    await Attendance.deleteMany({
+      class: classId,
+      date: attendanceDate,
+      subject: subjectId && subjectId !== "general" ? subjectId : null,
+    });
+
+    // Create new attendance records
+    const records = attendanceRecords.map(record => ({
+      class: classId,
+      student: record.studentId,
+      subject: subjectId && subjectId !== "general" ? subjectId : null,
+      date: attendanceDate,
+      status: record.status,
+      markedBy: teacherProfile._id,
+      remarks: record.remarks || null,
+    }));
+
+    await Attendance.insertMany(records);
+
+    return successResponse(
+      { count: records.length },
+      `Attendance recorded successfully for ${records.length} student(s)`
+    );
+
+  } catch (error) {
+    console.error("Submit attendance error:", error);
     return handleMongoError(error);
   }
 }

@@ -1,7 +1,7 @@
 import connectDB from "@/lib/mongodb";
-import Teacher from "@/lib/models/Teacher";
 import Material from "@/lib/models/Material";
-import { requireTeacher } from "@/lib/auth";
+import Teacher from "@/lib/models/Teacher";
+import { requireAuth } from "@/lib/auth";
 import { 
   successResponse, 
   errorResponse,
@@ -13,8 +13,12 @@ import {
 // GET teacher's materials
 export async function GET(request) {
   try {
-    const { user, error, status } = await requireTeacher();
+    const { user, error, status } = await requireAuth();
     if (error) return errorResponse(error, status);
+
+    if (user.role !== "teacher") {
+      return errorResponse("Access denied. Teachers only.", 403);
+    }
 
     await connectDB();
 
@@ -47,6 +51,7 @@ export async function GET(request) {
     return successResponse(createPaginationResponse(materials, total, page, limit));
 
   } catch (error) {
+    console.error("Get materials error:", error);
     return handleMongoError(error);
   }
 }
@@ -54,14 +59,29 @@ export async function GET(request) {
 // POST create material
 export async function POST(request) {
   try {
-    const { user, error, status } = await requireTeacher();
+    const { user, error, status } = await requireAuth();
     if (error) return errorResponse(error, status);
 
-    const body = await request.json();
-    const { title, description, type, classId, subjectId, file, externalLink, tags } = body;
+    if (user.role !== "teacher") {
+      return errorResponse("Access denied. Teachers only.", 403);
+    }
 
-    if (!title || !classId || !subjectId) {
-      return errorResponse("Title, class, and subject are required", 400);
+    const body = await request.json();
+    const { 
+      title, description, type, classId, subjectId, file, 
+      externalLink, tags, isPublished 
+    } = body;
+
+    if (!title || !classId || !subjectId || !type) {
+      return errorResponse("Title, class, subject, and type are required", 400);
+    }
+
+    if (type === "link" && !externalLink) {
+      return errorResponse("External link is required for link type", 400);
+    }
+
+    if (type !== "link" && !file) {
+      return errorResponse("File is required for non-link types", 400);
     }
 
     await connectDB();
@@ -71,21 +91,17 @@ export async function POST(request) {
       return errorResponse("Teacher profile not found", 404);
     }
 
-    // Verify teacher has access to this class
-    if (!teacher.classes.map(c => c.toString()).includes(classId)) {
-      return errorResponse("Access denied to this class", 403);
-    }
-
     const material = await Material.create({
       title,
       description,
-      type: type || "document",
+      type,
       class: classId,
       subject: subjectId,
       teacher: teacher._id,
       file: file || null,
       externalLink: externalLink || null,
       tags: tags || [],
+      isPublished: isPublished !== false,
     });
 
     await material.populate([
@@ -93,9 +109,10 @@ export async function POST(request) {
       { path: "subject", select: "name code" }
     ]);
 
-    return successResponse(material, "Material uploaded successfully", 201);
+    return successResponse(material, "Material created successfully", 201);
 
   } catch (error) {
+    console.error("Create material error:", error);
     return handleMongoError(error);
   }
 }
