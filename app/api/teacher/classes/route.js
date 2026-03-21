@@ -2,6 +2,7 @@ import connectDB from "@/lib/mongodb";
 import Class from "@/lib/models/Class";
 import Teacher from "@/lib/models/Teacher";
 import Student from "@/lib/models/Student";
+import Subject from "@/lib/models/Subject";
 import { requireAuth } from "@/lib/auth";
 import { 
   successResponse, 
